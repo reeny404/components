@@ -1,0 +1,16 @@
+#!/bin/sh
+
+echo "🏗️ 빌드 검사를 시작합니다..."
+
+# pnpm build 명령어 실행
+pnpm build
+
+# 빌드 결과 확인
+if [ $? -ne 0 ]; then
+    echo "❌ 빌드 실패! Push가 중단되었습니다."
+    echo "빌드 오류를 수정한 후 다시 시도해주세요."
+    exit 1
+fi
+
+echo "✅ 빌드 성공! Push를 진행합니다."
+exit 0
