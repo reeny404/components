@@ -56,7 +56,9 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "prettier --write"
+      "eslint --fix",
+      "prettier --write",
+      "tsc --noEmit"
     ]
   },
   "eslintConfig": {
