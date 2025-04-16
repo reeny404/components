@@ -2,11 +2,8 @@
 
 @layer base {
   :root {
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-
+    font-family: Pretendard-Regular, system-ui, Avenir, Helvetica, Arial, sans-serif;
     color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -14,9 +11,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  body {
-    min-width: 100vw;
-    min-height: 100vh;
+  #root {
+    @apply min-w-screen min-h-screen;
+
+    * {
+      @apply box-border;
+    }
   }
 
   @media (prefers-color-scheme: light) {
@@ -24,5 +24,19 @@
       color: #213547;
       background-color: #ffffff;
     }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color: #ffffff;
+      background-color: #242424;
+    }
+  }
+
+  @font-face {
+    font-family: 'Pretendard-Regular';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
   }
 }
