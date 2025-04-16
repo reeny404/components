@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useState } from 'react';
+import EditorLayer from './layer';
 
 const CANVAS_W = 1000; // px
 const CANVAS_H = 850; // px
@@ -36,7 +37,7 @@ const calculateTotalLineCount = (
 function EditorTestPage() {
   const [realInterval, setRealInterval] = useState<number>(100);
   const [realW, setRealW] = useState<number>(300000);
-  const [realH, setRealH] = useState<number>(150000);
+  const [realH, setRealH] = useState<number>(300000);
 
   // const calculate = useCallback((canvasSize: number, realSize: number, realGridGap: number): GridLineSpec=> {
   //   const lineCount = Math.floor(realSize / realGridGap);
@@ -61,92 +62,87 @@ function EditorTestPage() {
   const vLineCount = calculateTotalLineCount(CANVAS_W, canvasInterval);
 
   return (
-    <div className="h-screen grid grid-rows-[48px_1fr] text-gray-900 text-center">
-      <header className="flex items-center justify-center gap-x-10 bg-gray-100">
-        <span className="text-2xl font-bold">GNB</span>
-        <span> | </span>
-        <div>
-          <div className="flex items-center justify-between gap-x-2">
-            <span className="text-sm text-gray-400">W</span>
-            <input
-              type="number"
-              className="w-4/5 p-2 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
-              value={realW}
-              onChange={(e) => setRealW(Number(e.target.value))}
-            />
-            <span className="text-sm text-gray-400">H</span>
-            <input
-              type="number"
-              className="w-4/5 p-2 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
-              value={realH}
-              onChange={(e) => setRealH(Number(e.target.value))}
-            />
-          </div>
+    <EditorLayer>
+      <div
+        className="grid grid-rows-2 items-center justify-center gap-y-4"
+        aria-label="데이터 설정"
+      >
+        <div className="flex items-center justify-between gap-x-2">
+          <span className="text-sm text-gray-500">W</span>
+          <input
+            type="number"
+            className="px-2 py-1 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
+            value={realW}
+            onChange={(e) => setRealW(Number(e.target.value))}
+            step={10000}
+          />
         </div>
-      </header>
-      <div className="grid grid-cols-[400px_1fr_300px] h-full">
-        <nav className="px-4 flex flex-col items-center justify-center gap-y-4 bg-gray-300">
-          <span className="text-2xl font-bold">LNB</span>
-          <div className="space-x-4">
-            <span>Grid Interval</span>
-            <input
-              type="number"
-              className="p-2 w-24 rounded bg-white border border-gray-200 hover:border-gray-800 xoutline-none border-box"
-              value={realInterval}
-              onChange={(e) => setRealInterval(Number(e.target.value))}
-              min={100}
-              step={100}
-              list="defaultNumbers"
-            />
-            <datalist id="defaultNumbers">
-              <option value="100"></option>
-              <option value="1000"></option>
-              <option value="5000"></option>
-              <option value="10000"></option>
-              <option value="100000"></option>
-            </datalist>
+        <div className="flex items-center justify-between gap-x-2">
+          <span className="text-sm text-gray-500">H</span>
+          <input
+            type="number"
+            className="px-2 py-1 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
+            value={realH}
+            onChange={(e) => setRealH(Number(e.target.value))}
+            step={10000}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-x-2">
+          <span className="text-sm text-gray-500">Line Gap</span>
+          <input
+            type="number"
+            className="px-2 py-1 w-24 rounded bg-white border border-gray-200 hover:border-gray-800 xoutline-none border-box"
+            value={realInterval}
+            onChange={(e) => setRealInterval(Number(e.target.value))}
+            min={100}
+            step={100}
+            list="defaultNumbers"
+          />
+          <datalist id="defaultNumbers">
+            <option value="100"></option>
+            <option value="1000"></option>
+            <option value="5000"></option>
+            <option value="10000"></option>
+            <option value="100000"></option>
+          </datalist>
+        </div>
+        <div className=" text-xs text-gray-400">
+          <div className="flex gap-x-2">
+            <span>H</span>
+            <span className="break-all text-sm">
+              {JSON.stringify(hLineSpec)}
+            </span>
           </div>
-          <div className="flex flex-col items-center justify-center gap-y-1 text-gray-500">
-            <div>
-              H{' '}
-              <span className="break-all text-sm">
-                {JSON.stringify(hLineSpec)}
-              </span>
-            </div>
-            <div>
-              V{' '}
-              <span className="break-all text-sm">
-                {JSON.stringify(vLineSpec)}
-              </span>
-            </div>
+          <div className="flex gap-x-2">
+            <span>V</span>
+            <span className="break-all text-sm">
+              {JSON.stringify(vLineSpec)}
+            </span>
           </div>
-        </nav>
-        <main className="flex items-center justify-center">
-          <section
-            className="bg-white #overflow-hidden"
-            style={{
-              width: CANVAS_W,
-              height: CANVAS_H,
-            }}
-          >
-            <HorizontalGridLine
-              lineGap={canvasInterval}
-              lineCount={hLineSpec.lineCount}
-              totalLineCount={hLineCount}
-            />
-            <VerticalGridLine
-              lineGap={canvasInterval}
-              lineCount={vLineSpec.lineCount}
-              totalLineCount={vLineCount}
-            />
-          </section>
-        </main>
-        <div className="px-4 flex flex-col items-center justify-center gap-y-4 bg-gray-300">
-          <span className="text-2xl font-bold">Right Panel</span>
-          <div className="space-x-4"></div>
         </div>
       </div>
-    </div>
+      <main className="flex items-center justify-center">
+        <section
+          aria-label="editor"
+          className="bg-white #overflow-hidden"
+          style={{
+            width: CANVAS_W,
+            height: CANVAS_H,
+          }}
+        >
+          <HorizontalGridLine
+            lineGap={canvasInterval}
+            lineCount={hLineSpec.lineCount}
+            totalLineCount={hLineCount}
+          />
+          <VerticalGridLine
+            lineGap={canvasInterval}
+            lineCount={vLineSpec.lineCount}
+            totalLineCount={vLineCount}
+          />
+        </section>
+      </main>
+    </EditorLayer>
   );
 }
 
