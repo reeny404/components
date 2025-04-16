@@ -6,12 +6,9 @@
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "composite": true,
+    "noEmit": true
   },
-  "include": ["src"],
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ]
+  "include": ["src", "vite.config.ts", "vitest.workspace.ts"]
 }
