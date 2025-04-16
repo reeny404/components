@@ -1,32 +1,64 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import clsx from 'clsx';
+import { useState } from 'react';
 
-const calculateInterval = (length: number, n: number) => {
-  return (length - n) / n + 1; // 선 사이의 간격
+const CANVAS_W = 1000; // px
+const CANVAS_H = 850; // px
+
+type GridLineSpec = {
+  lineCount: number; // 실제 줄 갯수 계산
+  totalLineCount: number; // canvasSize가 꽉차게 넣기 위한 줄 갯수 계산
+  lineGap: number; // realSize :  realGridGap = canvasSize : lineGap
+  totalPixels: number; // 실제 줄 갯수 * 줄 간격
+  isValid: boolean; // 선+간격 모두 그리기 위해 필요한 길이가 canvasSize보다 작은지 확인
+};
+
+const calculateLineSpec = (
+  canvasSize: number,
+  realSize: number,
+  realGridGap: number,
+): Pick<GridLineSpec, 'lineCount' | 'lineGap'> => {
+  const lineCount = Math.floor(realSize / realGridGap);
+  const lineGap = Math.floor((canvasSize * realGridGap) / realSize);
+
+  return {
+    lineCount,
+    lineGap,
+  };
+};
+
+const calculateTotalLineCount = (
+  canvasSize: number,
+  lineGap: number,
+): number => {
+  return Math.min(Math.floor(canvasSize / lineGap), canvasSize);
 };
 
 function EditorTestPage() {
-  const { interval: initData } = useParams();
-  const [interval, setInterval] = useState<number>(100);
-  const [width, setWidth] = useState<number>(300000);
-  const [height, setHeight] = useState<number>(150000);
+  const [realInterval, setRealInterval] = useState<number>(100);
+  const [realW, setRealW] = useState<number>(300000);
+  const [realH, setRealH] = useState<number>(150000);
 
-  useEffect(() => {
-    const data = Number(initData);
-    if (data) {
-      setInterval(data);
-    }
-  }, [initData]);
+  // const calculate = useCallback((canvasSize: number, realSize: number, realGridGap: number): GridLineSpec=> {
+  //   const lineCount = Math.floor(realSize / realGridGap);
+  //   const lineGap = Math.floor(canvasSize * realGridGap / realSize);
+  //   const totalLineCount = Math.min(Math.floor(canvasSize / lineGap), canvasSize)
+  //   const totalPixels = lineCount * lineGap;
 
-  const horizontalLineCount = width / interval;
-  const verticalLineCount = height / interval;
+  //   return {
+  //     lineCount,
+  //     totalLineCount,
+  //     lineGap,
+  //     totalPixels,
+  //     isValid: totalPixels <= canvasSize,
+  //   };
+  // }, []);
 
-  const hInterval = calculateInterval(width, interval);
-  const vInterval = calculateInterval(height, interval);
+  const hLineSpec = calculateLineSpec(CANVAS_H, realW, realInterval);
+  const vLineSpec = calculateLineSpec(CANVAS_W, realH, realInterval);
+  const canvasInterval = Math.min(hLineSpec.lineGap, vLineSpec.lineGap);
 
-  console.log('1', horizontalLineCount, verticalLineCount);
-  console.log('2', width, height);
-  console.log('3', hInterval, vInterval, interval);
+  const hLineCount = calculateTotalLineCount(CANVAS_H, canvasInterval);
+  const vLineCount = calculateTotalLineCount(CANVAS_W, canvasInterval);
 
   return (
     <div className="h-screen grid grid-rows-[48px_1fr] text-gray-900 text-center">
@@ -39,15 +71,15 @@ function EditorTestPage() {
             <input
               type="number"
               className="w-4/5 p-2 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
-              value={width}
-              onChange={(e) => setWidth(Number(e.target.value))}
+              value={realW}
+              onChange={(e) => setRealW(Number(e.target.value))}
             />
             <span className="text-sm text-gray-400">H</span>
             <input
               type="number"
               className="w-4/5 p-2 rounded bg-white border border-white hover:border-gray-800 xoutline-none border-box"
-              value={height}
-              onChange={(e) => setHeight(Number(e.target.value))}
+              value={realH}
+              onChange={(e) => setRealH(Number(e.target.value))}
             />
           </div>
         </div>
@@ -60,8 +92,8 @@ function EditorTestPage() {
             <input
               type="number"
               className="p-2 w-24 rounded bg-white border border-gray-200 hover:border-gray-800 xoutline-none border-box"
-              value={interval}
-              onChange={(e) => setInterval(Number(e.target.value))}
+              value={realInterval}
+              onChange={(e) => setRealInterval(Number(e.target.value))}
               min={100}
               step={100}
               list="defaultNumbers"
@@ -74,31 +106,41 @@ function EditorTestPage() {
               <option value="100000"></option>
             </datalist>
           </div>
-        </nav>
-        <section className="flex items-center justify-center">
-          <main className="w-[1000px] h-[850px] bg-white #overflow-hidden">
-            {/* <div className="size-full py-0.5 ">
-              {Array.from({ length: horizontalLineCount }).map((_, index) => (
-                <div key={index} className="py-0.5 w-full border-t border-gray-400"></div>
-              ))}
-            </div> */}
-            <div className="size-full flex px-0.5">
-              {Array.from({ length: verticalLineCount }).map((_, index) => (
-                <>
-                  <div
-                    key={index}
-                    className="pr-0.5 h-full border-l border-gray-400"
-                  ></div>
-                  {index % 10 === 0 && (
-                    <div className="relative text-white text-xs">
-                      <div className="absolute -top-5 -left-2">{index}</div>
-                    </div>
-                  )}
-                </>
-              ))}
+          <div className="flex flex-col items-center justify-center gap-y-1 text-gray-500">
+            <div>
+              H{' '}
+              <span className="break-all text-sm">
+                {JSON.stringify(hLineSpec)}
+              </span>
             </div>
-          </main>
-        </section>
+            <div>
+              V{' '}
+              <span className="break-all text-sm">
+                {JSON.stringify(vLineSpec)}
+              </span>
+            </div>
+          </div>
+        </nav>
+        <main className="flex items-center justify-center">
+          <section
+            className="bg-white #overflow-hidden"
+            style={{
+              width: CANVAS_W,
+              height: CANVAS_H,
+            }}
+          >
+            <HorizontalGridLine
+              lineGap={canvasInterval}
+              lineCount={hLineSpec.lineCount}
+              totalLineCount={hLineCount}
+            />
+            <VerticalGridLine
+              lineGap={canvasInterval}
+              lineCount={vLineSpec.lineCount}
+              totalLineCount={vLineCount}
+            />
+          </section>
+        </main>
         <div className="px-4 flex flex-col items-center justify-center gap-y-4 bg-gray-300">
           <span className="text-2xl font-bold">Right Panel</span>
           <div className="space-x-4"></div>
@@ -109,3 +151,98 @@ function EditorTestPage() {
 }
 
 export default EditorTestPage;
+
+type GridLineProps = Pick<
+  GridLineSpec,
+  'lineCount' | 'totalLineCount' | 'lineGap'
+>;
+
+function VerticalGridLine({
+  lineCount,
+  totalLineCount,
+  lineGap,
+}: GridLineProps) {
+  return (
+    <div
+      className="absolute size-full flex"
+      style={{ width: CANVAS_W, height: CANVAS_H }}
+      aria-label="세로 grid 그리기"
+    >
+      {Array.from({ length: totalLineCount }).map((_, i) => {
+        const index = i + 1;
+        const isMainGrid = (index + 1) % 10 === 0;
+        const isLast = index === lineCount;
+
+        return (
+          <>
+            <div
+              key={index}
+              style={{ width: lineGap }}
+              className={clsx(
+                'h-full border-r',
+                isMainGrid ? 'border-gray-800' : 'border-gray-400',
+              )}
+            ></div>
+            {(isMainGrid || isLast) && (
+              <div className="relative text-white text-xs">
+                <div
+                  className={clsx(
+                    'absolute -top-5 -left-2',
+                    isLast && 'text-blue-200 font-bold z-10 bg-black',
+                  )}
+                >
+                  {index + 1}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })}
+    </div>
+  );
+}
+
+function HorizontalGridLine({
+  lineCount,
+  totalLineCount,
+  lineGap,
+}: GridLineProps) {
+  return (
+    <div
+      className="absolute size-full flex flex-col"
+      style={{ width: CANVAS_W, height: CANVAS_H }}
+      aria-label="가로 grid 그리기"
+    >
+      {Array.from({ length: totalLineCount }).map((_, i) => {
+        const index = i + 1;
+        const isMainGrid = (index + 1) % 10 === 0;
+        const isLast = index === lineCount;
+
+        return (
+          <>
+            <div
+              key={index}
+              style={{ height: lineGap }}
+              className={clsx(
+                'w-full border-b',
+                isMainGrid ? 'border-gray-800' : 'border-gray-400',
+              )}
+            ></div>
+            {(isMainGrid || isLast) && (
+              <div className="relative text-white text-xs text-right">
+                <div
+                  className={clsx(
+                    'absolute -top-2.5 -left-8',
+                    isLast && 'text-blue-200 font-bold z-10 bg-black',
+                  )}
+                >
+                  {index + 1}
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })}
+    </div>
+  );
+}
