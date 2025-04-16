@@ -34,7 +34,7 @@ const calculateTotalLineCount = (
   return Math.min(Math.floor(canvasSize / lineGap), canvasSize);
 };
 
-function EditorTestPage() {
+function EditorSample() {
   const [realInterval, setRealInterval] = useState<number>(100);
   const [realW, setRealW] = useState<number>(300000);
   const [realH, setRealH] = useState<number>(300000);
@@ -146,7 +146,7 @@ function EditorTestPage() {
   );
 }
 
-export default EditorTestPage;
+export default EditorSample;
 
 type GridLineProps = Pick<
   GridLineSpec,
